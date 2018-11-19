@@ -1,9 +1,9 @@
 start_epoch = 1
-num_epochs = 10
-batch_size = 256
+num_epochs = 13
+batch_size = 8
 optim_type = 'Adam'
-resize=32
-lr=0.001
+resize=224
+lr=0.0001
 
 mean = {
     'cifar10': (0.4914, 0.4822, 0.4465),
