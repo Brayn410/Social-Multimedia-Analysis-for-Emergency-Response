@@ -26,7 +26,7 @@ else:
 IMG_PATH = cur_dir + dirSlash + 'dog-breed-identification-dataset' + dirSlash + 'train' + dirSlash
 IMG_EXT = '.jpg'
 TRAIN_DATA = cur_dir + dirSlash + 'dog-breed-identification-dataset' + dirSlash + 'labels.csv'
-
+TEST_DATA = cur_dir + dirSlash + 'dog-breed-identification-dataset' + dirSlash + 'test' + dirSlash
 
 
 

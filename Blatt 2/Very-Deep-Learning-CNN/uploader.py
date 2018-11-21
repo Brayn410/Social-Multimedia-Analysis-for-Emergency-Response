@@ -1,16 +1,24 @@
 import torch
 from dataset import dataset
+from dataset import ConvertDataset
 import torch.nn as nn
-from torch.autograd import Variable
-import numpy as np
+#from torch.autograd import Variable
+#import numpy as np
 import platform
 import os
+import config as cf
+from torchvision import transforms
 
 systemName = platform.system()
 if systemName == 'Linux':
     dirSlash = '/'
 else:
     dirSlash = '\\'
+cur_dir = os.getcwd()
+TEST_IMAGES = cur_dir + dirSlash + 'dog-breed-identification-dataset' + dirSlash + 'test' + dirSlash
+IMG_EXT = '.jpg'
+TRAIN_DATA = cur_dir + dirSlash + 'dog-breed-identification-dataset' + dirSlash + 'faker.csv'
+
 
 if __name__ == '__main__':
 
@@ -24,14 +32,19 @@ if __name__ == '__main__':
     use_cuda = torch.cuda.is_available()
     net = torch.load('.' + dirSlash + 'test.pt')
     net.eval()
-    trainloader, testloader, outputs, inputs = dataset('dog-breed')
-    criterion = nn.MultiMarginLoss()
-    dataiter = iter(testloader)
+    trainloader, testloader2, outputs, inputs = dataset('dog-breed')
+    transformations = transforms.Compose([transforms.Resize(size=(224,224)), transforms.ToTensor()])
+    trueTest_set = ConvertDataset(TRAIN_DATA, TEST_IMAGES, IMG_EXT, transformations)
+    testloader = torch.utils.data.DataLoader(trueTest_set, batch_size=cf.batch_size, shuffle=False, num_workers=1)
+    criterion = nn.CrossEntropyLoss()
+    #dataiter = iter(testloader)
     #images, labels = dataiter.next()
     #print('GT: ', ' '.join('%5s' % classes[labels[j]] for j in range(8)))
-    correct = 0 
-    total = 0
+    #correct = 0 
+    #total = 0
     #with torch.no_grad():
+    #print(testloader2)
+    #print(testloader)
     for idx, data in enumerate(testloader):
         print(idx)
         images, labels, paths = data
@@ -41,7 +54,14 @@ if __name__ == '__main__':
             imgName = paths[counter].split(dirSlash)[-1].split('.')[0]
             resultValues = []
             for oneClassLoss in oneImage.data:
-                resultValues.append(str(oneClassLoss.item()))
+                if len(resultValues) >= 120:
+                    break
+                else:
+                    val = oneClassLoss.item()
+                resultValues.append(val)
+            resultValues = [(c-min(resultValues))/(max(resultValues)-min(resultValues)) for c in resultValues]
+            resultValues = [c/sum(resultValues) for c in resultValues]  
+            resultValues = [str(c) for c in resultValues]          
             f.write(imgName + ',' + ','.join(resultValues) + '\n')
     f.close()
     os.system("zip result.csv.zip result.csv")

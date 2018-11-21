@@ -149,8 +149,7 @@ def main():
 
     print ('Output classes: {}\nInput channels: {}'.format(outputs, inputs))
     
-    #TODO BUG if pretrained = True the number of classes = 1000! will be difficult for the uploader
-    pretrained = False
+    pretrained = True
     iter_per_epoch_train = trainloader.__len__()
     iter_per_epoch_test = testloader.__len__()
 
@@ -172,8 +171,8 @@ def main():
         net = torch.nn.DataParallel(net, device_ids=range(torch.cuda.device_count()))
         cudnn.benchmark = True
 
-    #criterion = nn.CrossEntropyLoss()
-    criterion = nn.MultiMarginLoss()
+    criterion = nn.CrossEntropyLoss()
+    #criterion = nn.MultiMarginLoss()
 
     train_loss, test_loss = start_train_test(net, trainloader, testloader, criterion)
 
