@@ -11,11 +11,11 @@ import zipfile
 
 import config as cf
 
+
 from transform import transform_training, transform_testing
 from torch.utils.data.dataset import Dataset
 from sklearn.preprocessing import MultiLabelBinarizer
 from torchvision import transforms
-
 
 cur_dir = os.getcwd()
 systemName = platform.system()
@@ -23,7 +23,7 @@ if systemName == 'Linux':
     dirSlash = '/'
 else:
     dirSlash = '\\'
-IMG_PATH = cur_dir + dirSlash + 'dog-breed-identification-datase' + dirSlash + 'train' + dirSlash
+IMG_PATH = cur_dir + dirSlash + 'dog-breed-identification-dataset' + dirSlash + 'train' + dirSlash
 IMG_EXT = '.jpg'
 TRAIN_DATA = cur_dir + dirSlash + 'dog-breed-identification-dataset' + dirSlash + 'labels.csv'
 
@@ -82,7 +82,9 @@ class ConvertDataset(Dataset):
         # label = torch.from_numpy(self.y_train[index])
         label = self.y_train[index]
 
-        return img, label
+        path = self.img_path + self.X_train[index] + self.img_ext
+
+        return img, label, path
 
     def __len__(self):
         return len(self.X_train.index)

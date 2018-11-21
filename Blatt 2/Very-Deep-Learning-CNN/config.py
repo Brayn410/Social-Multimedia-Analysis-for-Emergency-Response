@@ -1,5 +1,5 @@
 start_epoch = 1
-num_epochs = 13
+num_epochs = 1
 batch_size = 8
 optim_type = 'Adam'
 resize=224

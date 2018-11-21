@@ -5,6 +5,7 @@ from torch.autograd import Variable
 import config as cf
 import time
 import numpy as np
+import platform
 
 
 import torch.nn as nn
@@ -26,6 +27,12 @@ use_cuda = torch.cuda.is_available()
 
 best_acc = 0
 
+systemName = platform.system()
+if systemName == 'Linux':
+    dirSlash = '/'
+else:
+    dirSlash = '\\'
+
 def train(epoch, net, trainloader, criterion, optimizer):
     net.train()
     train_loss = 0
@@ -35,7 +42,7 @@ def train(epoch, net, trainloader, criterion, optimizer):
     train_loss_stacked = np.array([0])
 
     print('\n=> Training Epoch #%d, LR=%.4f' %(epoch, cf.lr))
-    for batch_idx, (inputs_value, targets) in enumerate(trainloader):
+    for batch_idx, (inputs_value, targets, paths) in enumerate(trainloader):
         print("Iteration:", batch_idx)
         if use_cuda:
             inputs_value, targets = inputs_value.cuda(), targets.cuda()    # GPU settings
@@ -69,7 +76,7 @@ def test(epoch, net, testloader, criterion):
     correct = 0
     total = 0
     test_loss_stacked = np.array([0])
-    for batch_idx, (inputs_value, targets) in enumerate(testloader):
+    for batch_idx, (inputs_value, targets, paths) in enumerate(testloader):
         print(batch_idx)
         if use_cuda:
             inputs_value, targets = inputs_value.cuda(), targets.cuda()    # GPU settings
@@ -78,7 +85,6 @@ def test(epoch, net, testloader, criterion):
             inputs_value, targets = Variable(inputs_value), Variable(targets)
         outputs = net(inputs_value)
         loss = criterion(outputs, targets)
-
         test_loss += loss.data[0]
         _, predicted = torch.max(outputs.data, 1)
         total += targets.size(0)
@@ -142,8 +148,9 @@ def main():
     # trainloader, testloader, outputs, inputs = dataset('mnist')
 
     print ('Output classes: {}\nInput channels: {}'.format(outputs, inputs))
-
-    pretrained = True
+    
+    #TODO BUG if pretrained = True the number of classes = 1000! will be difficult for the uploader
+    pretrained = False
     iter_per_epoch_train = trainloader.__len__()
     iter_per_epoch_test = testloader.__len__()
 
@@ -151,8 +158,8 @@ def main():
 
 
     if pretrained:
-        # net = models.alexnet(pretrained=True)
-        net = models.resnet101(pretrained=True)
+        net = models.alexnet(pretrained=True)
+        #net = models.resnet101(pretrained=True)
     else:
         net = AlexNet(num_classes=outputs, inputs=inputs)
 
@@ -165,7 +172,8 @@ def main():
         net = torch.nn.DataParallel(net, device_ids=range(torch.cuda.device_count()))
         cudnn.benchmark = True
 
-    criterion = nn.CrossEntropyLoss()
+    #criterion = nn.CrossEntropyLoss()
+    criterion = nn.MultiMarginLoss()
 
     train_loss, test_loss = start_train_test(net, trainloader, testloader, criterion)
 
@@ -200,6 +208,7 @@ def main():
 
     print("new_train_loss =", new_train_loss)
     print("new_test_loss =", new_test_loss)
+    torch.save(net, '.' + dirSlash + 'test.pt')
 
     """
     num_epochs_train = [1,2,3]
@@ -243,3 +252,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
