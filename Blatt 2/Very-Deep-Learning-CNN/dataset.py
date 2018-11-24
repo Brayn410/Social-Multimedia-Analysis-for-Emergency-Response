@@ -8,6 +8,7 @@ import os
 import platform
 import sys
 import zipfile
+import autoaugment as aa
 
 import config as cf
 
@@ -168,9 +169,11 @@ def dataset(dataset_name):
         outputs = 10
         inputs = 3
 
-        transformations = transforms.Compose([transforms.Resize(size=(224,224)),
-                                              transforms.RandomHorizontalFlip(),
-                                              transforms.ToTensor()])
+        #transformations = transforms.Compose([transforms.Resize(size=(224,224)),
+        #                                      transforms.RandomHorizontalFlip(),
+        #                                      transforms.ToTensor()])
+        policy = aa.DogePolicy()
+        transformations = transforms.Compose([transforms.Resize(size=(224,224)), policy, transforms.ToTensor()])
 
         complete_set = ConvertDataset(TRAIN_DATA, IMG_PATH, IMG_EXT, transformations)
 
